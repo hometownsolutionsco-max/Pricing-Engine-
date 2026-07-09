@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estimate — Hometown Solutions</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;padding:20px;min-height:100vh}
+  .wrap{max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+  .hdr{background:#1F3864;padding:28px 24px;text-align:center}
+  .hdr .co{color:#E8621A;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+  .hdr h1{color:#fff;font-size:22px;font-weight:800}
+  .hdr .sub{color:rgba(255,255,255,.65);font-size:13px;margin-top:6px}
+  .body{padding:24px}
+  .badge{display:inline-block;background:#E6F4EA;color:#2D7D46;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;margin-bottom:14px}
+  .cust{font-size:19px;font-weight:800;color:#1F3864;margin-bottom:2px}
+  .addr{font-size:13px;color:#9AA0AB;margin-bottom:4px}
+  .date{font-size:12px;color:#9AA0AB;margin-bottom:18px}
+  .divider{height:1px;background:#e2e5ea;margin:14px 0}
+  .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e2e5ea;font-size:15px;color:#4A5568}
+  .row span:last-child{font-weight:600;color:#1F3864}
+  .total-box{background:#1F3864;border-radius:12px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;margin:18px 0}
+  .total-box .tl{color:rgba(255,255,255,.75);font-size:13px}
+  .total-box .tv{color:#fff;font-size:28px;font-weight:800}
+  .section-lbl{font-size:11px;font-weight:700;color:#9AA0AB;text-transform:uppercase;letter-spacing:.06em;margin:20px 0 10px}
+  .section-lbl:first-child{margin-top:0}
+  .status-box{background:#E6F4EA;border:1px solid #2D7D46;border-radius:10px;padding:14px 16px;margin:10px 0}
+  .status-box .lbl{font-size:11px;color:#2D7D46;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+  .status-box .val{font-size:15px;color:#1F3864;font-weight:700}
+  .progress-pill{display:inline-block;background:#1F3864;color:#fff;font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px}
+  .notes-box{background:#f8f9fa;border:1px solid #e2e5ea;border-radius:10px;padding:14px 16px;font-size:14px;color:#4A5568;line-height:1.5}
+  .footer{text-align:center;font-size:12px;color:#9AA0AB;line-height:1.7;padding-top:16px;margin-top:16px;border-top:1px solid #e2e5ea}
+  .footer strong{color:#4A5568;display:block;margin-top:8px}
+  .error-box{max-width:480px;margin:60px auto;text-align:center;color:#4A5568;font-size:15px;line-height:1.6}
+  .call-btn{display:block;text-align:center;background:#E8621A;color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px;border-radius:10px;margin-top:20px}
+</style>
+</head>
+<body>
+<div id="content"></div>
+
+<script>
+// ── Read and decode job data from the URL ──────────────────────────────────
+// Data is passed as a single base64-encoded JSON blob in the "d" query param
+// so we don't blow past URL length limits with dozens of separate params.
+function getParams() {
+  const qs = new URLSearchParams(window.location.search);
+  const encoded = qs.get('d');
+  if (!encoded) return null;
+  try {
+    const json = decodeURIComponent(escape(atob(decodeURIComponent(encoded))));
+    return JSON.parse(json);
+  } catch (e) {
+    return null;
+  }
+}
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  const div = document.createElement('div');
+  div.textContent = String(s);
+  return div.innerHTML;
+}
+
+function renderError() {
+  document.getElementById('content').innerHTML = `
+    <div class="error-box">
+      <div style="font-size:40px;margin-bottom:12px">🔧</div>
+      <div style="font-weight:700;color:#1F3864;font-size:18px;margin-bottom:8px">Hometown Solutions</div>
+      <div>This link didn't include any job details, or it may have expired.</div>
+      <a class="call-btn" href="tel:3179418086">Call 317-941-8086</a>
+    </div>`;
+}
+
+function renderEstimate(d) {
+  const rowsHTML = (d.rows || []).map(r =>
+    `<div class="row"><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`
+  ).join('');
+
+  document.getElementById('content').innerHTML = `
+  <div class="wrap">
+    <div class="hdr">
+      <div class="co">Hometown Solutions</div>
+      <h1>Job Estimate</h1>
+      <div class="sub">Master Journeyman Plumber &middot; Licensed &amp; Insured</div>
+    </div>
+    <div class="body">
+      <div class="badge">✓ Licensed &amp; Insured</div>
+      ${d.custName ? `<div class="cust">${esc(d.custName)}</div>` : ''}
+      ${d.custAddr ? `<div class="addr">${esc(d.custAddr)}</div>` : ''}
+      <div class="date">Estimate date: ${esc(d.date)}</div>
+      <div class="divider"></div>
+      ${rowsHTML}
+      <div class="total-box">
+        <span class="tl">Total</span>
+        <span class="tv">${esc(d.total)}</span>
+      </div>
+      <div class="footer">
+        317-941-8086 &middot; hometownhelp365.com<br>
+        Lebanon, Indiana &middot; Licensed &amp; Insured
+        <strong>All work performed to Indiana plumbing code standards.</strong>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPM(d) {
+  const readingRows = (d.readings || []).map(r =>
+    `<div class="row" style="font-size:14px"><span>${esc(r[0])}</span><span>${esc(r[1])}</span></div>`
+  ).join('');
+
+  document.getElementById('content').innerHTML = `
+  <div class="wrap">
+    <div class="hdr">
+      <div class="co">Hometown Solutions</div>
+      <h1>${esc(d.title)}</h1>
+      <div class="sub">${d.fuel ? (d.fuel === 'gas' ? '🔥 Gas' : '⚡ Electric') + ' &middot; ' : ''}Preventive Maintenance Report</div>
+    </div>
+    <div class="body">
+      <div class="section-lbl">Job Information</div>
+      <div class="row"><span>Customer</span><span>${esc(d.custName)}</span></div>
+      <div class="row"><span>Date</span><span>${esc(d.date)}</span></div>
+      <div class="row"><span>Address</span><span>${esc(d.custAddr)}</span></div>
+      <div class="row"><span>Equipment</span><span>${esc(d.model)}</span></div>
+      <div class="row"><span>Serial #</span><span>${esc(d.serial)}</span></div>
+      <div class="row"><span>Equipment Age</span><span>${esc(d.age)} yrs</span></div>
+
+      <div class="section-lbl">Tasks Completed</div>
+      <div class="progress-pill">${esc(d.done)} / ${esc(d.total)} tasks completed</div>
+
+      ${readingRows ? `<div class="section-lbl">Readings Recorded</div>${readingRows}` : ''}
+
+      <div class="section-lbl">Overall Status</div>
+      <div class="status-box">
+        <div class="lbl">System Status</div>
+        <div class="val">${esc(d.status)}</div>
+      </div>
+
+      ${d.notes ? `<div class="section-lbl">Technician Notes</div><div class="notes-box">${esc(d.notes)}</div>` : ''}
+
+      <div class="footer">
+        317-941-8086 &middot; hometownhelp365.com<br>
+        Lebanon, Indiana &middot; Licensed &amp; Insured
+        <strong>All inspections performed to Indiana plumbing code standards.</strong>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Main ────────────────────────────────────────────────────────────────
+const data = getParams();
+if (!data || !data.kind) {
+  renderError();
+} else if (data.kind === 'estimate') {
+  renderEstimate(data);
+} else if (data.kind === 'pm') {
+  renderPM(data);
+} else {
+  renderError();
+}
+</script>
+</body>
+</html>

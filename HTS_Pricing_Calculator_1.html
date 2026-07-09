@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HTS Pricing">
+<meta name="theme-color" content="#1F3864">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%231F3864'/%3E%3Ctext x='90' y='120' font-family='Arial Black,Arial' font-weight='900' font-size='96' text-anchor='middle' fill='%23E8621A'%3EH%3C/text%3E%3Ctext x='90' y='155' font-family='Arial,sans-serif' font-weight='700' font-size='22' text-anchor='middle' fill='rgba(255,255,255,0.7)'%3EPTS%3C/text%3E%3C/svg%3E">
+<title>HTS Pricing Calculator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--navy:#1F3864;--orange:#E8621A;--white:#fff;--gray1:#f0f2f5;--gray2:#e2e5ea;--gray3:#9AA0AB;--gray4:#4A5568;--green:#2D7D46;--green-lt:#E6F4EA;--red:#C0392B;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.1)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--gray1);color:var(--gray4);min-height:100vh;padding-bottom:120px}
+/* NAV TABS */
+.tab-bar{background:var(--navy);display:flex;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tab{flex:1;padding:14px 8px 10px;text-align:center;color:rgba(255,255,255,.5);font-size:12px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;transition:.2s;letter-spacing:.02em}
+.tab.active{color:#fff;border-bottom-color:var(--orange)}
+.tab-icon{font-size:18px;display:block;margin-bottom:2px}
+/* PAGES */
+.page{display:none;max-width:640px;margin:0 auto;padding:14px 16px}
+.page.active{display:block}
+/* APP HEADER */
+.app-hdr{background:var(--navy);padding:14px 20px 10px;text-align:center}
+.app-hdr-inner{max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.app-title{color:#fff;font-size:16px;font-weight:700}
+.app-sub{color:rgba(255,255,255,.5);font-size:11px;margin-top:1px}
+.app-rates{color:rgba(255,255,255,.6);font-size:11px;text-align:right;line-height:1.7}
+/* CARDS */
+.card{background:#fff;border-radius:var(--radius);padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
+.sec-title{font-size:11px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.sec-title span{font-size:15px}
+/* FIELDS */
+.field{display:grid;grid-template-columns:1fr 140px;align-items:center;gap:14px;margin-bottom:10px}
+.field:last-child{margin-bottom:0}
+.field label{font-size:14px;color:var(--gray4);line-height:1.3}
+.field label small{display:block;font-size:11px;color:var(--gray3);margin-top:2px}
+.field input,.field select{width:100%;padding:10px 12px;border:1.5px solid var(--gray2);border-radius:9px;font-size:14px;color:var(--gray4);background:#fff;outline:none;-webkit-appearance:none}
+.field input{text-align:right}
+.field input::placeholder{color:#ccc}
+.field input:focus,.field select:focus{border-color:var(--navy)}
+/* FULL WIDTH */
+.field-full{margin-bottom:10px}
+.field-full:last-child{margin-bottom:0}
+.field-full label{font-size:11px;color:var(--gray3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px}
+.field-full input,.field-full textarea{width:100%;padding:11px 14px;border:1.5px solid var(--gray2);border-radius:9px;font-size:14px;color:var(--gray4);background:#fff;outline:none;-webkit-appearance:none}
+.field-full input::placeholder,.field-full textarea::placeholder{color:#ccc}
+.field-full input:focus,.field-full textarea:focus{border-color:var(--navy)}
+/* TOOL GRID */
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tool-row{display:grid;grid-template-columns:24px 1fr;align-items:center;gap:6px}
+.tool-num{font-size:12px;color:var(--gray3);font-weight:700;text-align:center}
+.tool-row select{width:100%;padding:9px 10px;border:1.5px solid var(--gray2);border-radius:9px;font-size:12px;color:var(--gray4);background:#fff;outline:none;-webkit-appearance:none}
+/* CC TOGGLE */
+.cc-row{display:flex;align-items:center;gap:12px}
+.tog{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.sldr{position:absolute;inset:0;background:#ccc;border-radius:24px;transition:.2s}
+.sldr:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tog input:checked+.sldr{background:var(--orange)}
+.tog input:checked+.sldr:before{transform:translateX(20px)}
+/* BREAKDOWN */
+.bdown{background:#f8f9fa;border:1px solid var(--gray2);border-radius:var(--radius);padding:14px 18px;margin-bottom:12px}
+.brow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--gray2);font-size:14px}
+.brow:last-child{border-bottom:none}
+.brow span:first-child{color:var(--gray4)}
+.brow span:last-child{font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums}
+.brow.disc span:last-child{color:#F39C12}
+.brow.cc-line span{color:var(--orange)}
+/* TOTAL */
+.total-box{background:var(--navy);border-radius:var(--radius);padding:18px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;box-shadow:var(--shadow)}
+.tl{color:rgba(255,255,255,.75);font-size:13px}
+.tv{color:#fff;font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+/* PROFIT */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pcard{background:#fff;border:1px solid var(--gray2);border-radius:10px;padding:12px 14px}
+.pcard-lbl{font-size:11px;color:var(--gray3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.pcard-val{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.pcard-val.g{color:var(--green)}
+.pcard-val.a{color:var(--orange)}
+.pcard-val.n{color:var(--navy)}
+/* BUTTONS */
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.btn{padding:13px 10px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--orange);color:#fff;grid-column:1/-1}
+.btn-text{background:#fff;color:var(--navy);border:1.5px solid var(--gray2)}
+.btn-email{background:var(--navy);color:#fff}
+.btn-reset{background:#fff;color:var(--gray3);border:1.5px solid var(--gray2);width:100%;margin-top:4px;font-size:13px;padding:10px}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-hdr{background:var(--navy);border-radius:16px 16px 0 0;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
+.modal-title{color:#fff;font-size:16px;font-weight:700}
+.modal-close{color:rgba(255,255,255,.7);font-size:22px;cursor:pointer;background:none;border:none;line-height:1;padding:0 4px}
+.modal-body{padding:20px}
+.est-co{font-size:12px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.est-cust{font-size:17px;font-weight:800;color:var(--navy);margin-bottom:2px}
+.est-divider{height:1px;background:var(--gray2);margin:12px 0}
+.est-row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:var(--gray4)}
+.est-row span:last-child{font-weight:600;color:var(--navy)}
+.est-total-row{display:flex;justify-content:space-between;font-size:17px;font-weight:800;padding:10px 0;color:var(--navy);border-top:2px solid var(--navy);margin-top:4px}
+.est-footer{font-size:11px;color:var(--gray3);text-align:center;margin-top:16px;line-height:1.7}
+/* PM TASKING */
+.pm-select-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.pm-type-btn{padding:14px 10px;border:2px solid var(--gray2);border-radius:10px;background:#fff;font-size:13px;font-weight:600;color:var(--gray4);cursor:pointer;text-align:center;transition:.15s}
+.pm-type-btn:active{transform:scale(.97)}
+.pm-type-btn.selected{border-color:var(--navy);background:var(--navy);color:#fff}
+.pm-type-btn span{display:block;font-size:20px;margin-bottom:4px}
+.task-item{padding:10px 0;border-bottom:1px solid var(--gray2)}
+.task-item:last-child{border-bottom:none}
+.task-item-top{display:flex;align-items:flex-start;gap:12px}
+.task-check{width:22px;height:22px;border:2px solid var(--gray2);border-radius:6px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:.15s;background:#fff}
+.task-check.checked{background:var(--green);border-color:var(--green)}
+.task-check.checked::after{content:"✓";color:#fff;font-size:13px;font-weight:700}
+.task-label{font-size:13px;color:var(--gray4);line-height:1.4;flex:1}
+.task-label.critical{color:var(--red);font-weight:600}
+.task-note{font-size:11px;color:var(--orange);margin-top:2px;font-style:italic}
+.task-reading{display:flex;align-items:center;gap:8px;margin-top:8px;margin-left:34px}
+.task-reading label{font-size:11px;color:var(--gray3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.task-reading input{flex:1;max-width:160px;padding:8px 10px;border:1.5px solid var(--gray2);border-radius:8px;font-size:13px;color:var(--navy);font-weight:600;background:#fbfbfc;outline:none}
+.task-reading input::placeholder{color:#ccc;font-weight:400}
+.task-reading input:focus{border-color:var(--navy);background:#fff}
+.pm-progress{background:var(--gray2);border-radius:10px;height:8px;margin-bottom:4px;overflow:hidden}
+.pm-progress-bar{height:100%;background:var(--green);border-radius:10px;transition:.3s}
+.sig-block{margin-top:8px}
+.sig-block label{font-size:11px;color:var(--gray3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px}
+.sig-line{border:none;border-bottom:2px solid var(--gray2);width:100%;padding:8px 0;font-size:14px;background:transparent;outline:none;color:var(--gray4)}
+.pm-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.pm-actions .btn-primary{grid-column:1/-1}
+@media(max-width:400px){.pgrid{grid-template-columns:1fr 1fr 1fr}.pcard-val{font-size:15px}.tv{font-size:24px}.actions{grid-template-columns:1fr}.btn-primary{grid-column:auto}.pm-select-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab active" onclick="showTab('pricing')"><span class="tab-icon">💰</span>Pricing</div>
+  <div class="tab" onclick="showTab('pm')"><span class="tab-icon">📋</span>PM Tasks</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PRICING PAGE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-pricing" class="page active">
+
+<div style="background:var(--navy);padding:10px 20px 8px">
+  <div style="max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:center">
+    <div><div style="color:#fff;font-size:15px;font-weight:700">HTS Pricing Calculator</div>
+    <div style="color:rgba(255,255,255,.5);font-size:11px">Hometown Solutions — Lebanon, IN</div></div>
+    <div style="color:rgba(255,255,255,.6);font-size:11px;text-align:right;line-height:1.7">Std $110 · Prem $125 · Emer $165<br>Helper $85 · Mat +50%</div>
+  </div>
+</div>
+
+<div class="page active" style="display:block">
+
+<!-- CUSTOMER -->
+<div class="card">
+  <div class="sec-title"><span>👤</span> Customer</div>
+  <div class="field-full"><label>Full name</label><input type="text" id="custName" placeholder="John Smith" autocomplete="name"></div>
+  <div class="field-full"><label>Phone</label><input type="tel" id="custPhone" placeholder="(317) 555-0100" autocomplete="tel"></div>
+  <div class="field-full"><label>Address</label><input type="text" id="custAddr" placeholder="123 Main St, Lebanon, IN" autocomplete="street-address"></div>
+  <div class="field-full"><label>Email</label><input type="email" id="custEmail" placeholder="customer@email.com" autocomplete="email"></div>
+</div>
+
+<!-- LABOR -->
+<div class="card">
+  <div class="sec-title"><span>⏱</span> Labor — Journeyman</div>
+  <div class="field"><label>Standard hours<small>$110/hr — routine service</small></label><input type="number" id="std" placeholder="0" min="0" step="0.25" oninput="calc()"></div>
+  <div class="field"><label>Premium hours<small>$125/hr — specialty work</small></label><input type="number" id="prem" placeholder="0" min="0" step="0.25" oninput="calc()"></div>
+  <div class="field"><label>Emergency hours<small>$165/hr — after hours</small></label><input type="number" id="emer" placeholder="0" min="0" step="0.25" oninput="calc()"></div>
+</div>
+
+<!-- HELPERS -->
+<div class="card">
+  <div class="sec-title"><span>🦺</span> Helpers / Apprentices</div>
+  <div class="field"><label>Helper 1 hours</label><input type="number" id="h1hrs" placeholder="0" min="0" step="0.25" oninput="calc()"></div>
+  <div class="field"><label>Helper 1 rate<small>$/hr billed to customer</small></label><input type="number" id="h1rate" placeholder="85" min="0" step="1" oninput="calc()"></div>
+  <div class="field" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--gray2)"><label>Helper 2 hours</label><input type="number" id="h2hrs" placeholder="0" min="0" step="0.25" oninput="calc()"></div>
+  <div class="field"><label>Helper 2 rate<small>$/hr billed to customer</small></label><input type="number" id="h2rate" placeholder="85" min="0" step="1" oninput="calc()"></div>
+</div>
+
+<!-- MATERIALS -->
+<div class="card">
+  <div class="sec-title"><span>📦</span> Materials</div>
+  <div class="field"><label>Your cost<small>What you paid at supply house</small></label><input type="number" id="mat" placeholder="0" min="0" step="0.01" oninput="calc()"></div>
+  <div class="field"><label>Markup</label>
+    <select id="mkup" onchange="calc()">
+      <option value="0.50">Standard (50%)</option>
+      <option value="0.75">Premium (75%)</option>
+      <option value="0">Customer-supplied (0%)</option>
+    </select>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="card">
+  <div class="sec-title"><span>🔧</span> Tools Used</div>
+  <div class="tool-grid" id="toolGrid">
+    <div class="tool-row"><span class="tool-num">1</span><select id="t1" onchange="calc()"><option value="0">None</option><option value="9.00">Backflow Gages — $9.00</option><option value="33.33">Camera &amp; Locator — $33.33</option><option value="1.67">Hammer Drill — $1.67</option><option value="2.17">Manometer — $2.17</option><option value="15.33">Pipe Threader — $15.33</option><option value="2.53">Pressure Washer — $2.53</option><option value="9.33">Pro Press Tool — $9.33</option><option value="18.67">Spartan Drain Machine — $18.67</option><option value="186.67">Tractor w/ Attachments — $186.67</option></select></div>
+    <div class="tool-row"><span class="tool-num">2</span><select id="t2" onchange="calc()"><option value="0">None</option><option value="9.00">Backflow Gages — $9.00</option><option value="33.33">Camera &amp; Locator — $33.33</option><option value="1.67">Hammer Drill — $1.67</option><option value="2.17">Manometer — $2.17</option><option value="15.33">Pipe Threader — $15.33</option><option value="2.53">Pressure Washer — $2.53</option><option value="9.33">Pro Press Tool — $9.33</option><option value="18.67">Spartan Drain Machine — $18.67</option><option value="186.67">Tractor w/ Attachments — $186.67</option></select></div>
+    <div class="tool-row"><span class="tool-num">3</span><select id="t3" onchange="calc()"><option value="0">None</option><option value="9.00">Backflow Gages — $9.00</option><option value="33.33">Camera &amp; Locator — $33.33</option><option value="1.67">Hammer Drill — $1.67</option><option value="2.17">Manometer — $2.17</option><option value="15.33">Pipe Threader — $15.33</option><option value="2.53">Pressure Washer — $2.53</option><option value="9.33">Pro Press Tool — $9.33</option><option value="18.67">Spartan Drain Machine — $18.67</option><option value="186.67">Tractor w/ Attachments — $186.67</option></select></div>
+    <div class="tool-row"><span class="tool-num">4</span><select id="t4" onchange="calc()"><option value="0">None</option><option value="9.00">Backflow Gages — $9.00</option><option value="33.33">Camera &amp; Locator — $33.33</option><option value="1.67">Hammer Drill — $1.67</option><option value="2.17">Manometer — $2.17</option><option value="15.33">Pipe Threader — $15.33</option><option value="2.53">Pressure Washer — $2.53</option><option value="9.33">Pro Press Tool — $9.33</option><option value="18.67">Spartan Drain Machine — $18.67</option><option value="186.67">Tractor w/ Attachments — $186.67</option></select></div>
+    <div class="tool-row"><span class="tool-num">5</span><select id="t5" onchange="calc()"><option value="0">None</option><option value="9.00">Backflow Gages — $9.00</option><option value="33.33">Camera &amp; Locator — $33.33</option><option value="1.67">Hammer Drill — $1.67</option><option value="2.17">Manometer — $2.17</option><option value="15.33">Pipe Threader — $15.33</option><option value="2.53">Pressure Washer — $2.53</option><option value="9.33">Pro Press Tool — $9.33</option><option value="18.67">Spartan Drain Machine — $18.67</option><option value="186.67">Tractor w/ Attachments — $186.67</option></select></div>
+    <div class="tool-row"><span class="tool-num">6</span><select id="t6" onchange="calc()"><option value="0">None</option><option value="9.00">Backflow Gages — $9.00</option><option value="33.33">Camera &amp; Locator — $33.33</option><option value="1.67">Hammer Drill — $1.67</option><option value="2.17">Manometer — $2.17</option><option value="15.33">Pipe Threader — $15.33</option><option value="2.53">Pressure Washer — $2.53</option><option value="9.33">Pro Press Tool — $9.33</option><option value="18.67">Spartan Drain Machine — $18.67</option><option value="186.67">Tractor w/ Attachments — $186.67</option></select></div>
+  </div>
+</div>
+
+<!-- ADD YOUR OWN TOOL -->
+<div class="card">
+  <div class="sec-title"><span>➕</span> Add Your Own Tool</div>
+  <div style="display:grid;grid-template-columns:1fr 110px 80px;gap:8px;align-items:end;margin-bottom:10px">
+    <div>
+      <label style="font-size:11px;color:var(--gray3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Tool name</label>
+      <input type="text" id="newToolName" placeholder="e.g. Pipe Saw" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray2);border-radius:9px;font-size:14px;color:var(--gray4);background:#fff;outline:none">
+    </div>
+    <div>
+      <label style="font-size:11px;color:var(--gray3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">$/use</label>
+      <input type="number" id="newToolRate" placeholder="0.00" min="0" step="0.01" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray2);border-radius:9px;font-size:14px;color:var(--gray4);background:#fff;outline:none;text-align:right">
+    </div>
+    <button onclick="addCustomTool()" style="padding:10px;background:var(--navy);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer">Add</button>
+  </div>
+  <div id="customToolsList"></div>
+  <div style="font-size:11px;color:var(--gray3);margin-top:6px">Added tools appear in all dropdowns above and save for next time.</div>
+</div>
+
+<!-- TRIP & EXTRAS -->
+<div class="card">
+  <div class="sec-title"><span>🚗</span> Trip &amp; Extras</div>
+  <div class="field"><label>Miles (one-way)<small>$0.70 IRS rate × 2 round trip</small></label><input type="number" id="miles" placeholder="0" min="0" oninput="calc()"></div>
+  <div class="field"><label>Permit fee</label><input type="number" id="permit" placeholder="0" min="0" step="0.01" oninput="calc()"></div>
+  <div class="field"><label>Rental cost<small>Your cost — 18% markup added</small></label><input type="number" id="rental" placeholder="0" min="0" step="0.01" oninput="calc()"></div>
+  <div class="field"><label>Subcontractor cost<small>Your cost — 10% margin added</small></label><input type="number" id="sub" placeholder="0" min="0" step="0.01" oninput="calc()"></div>
+  <div class="field"><label>Discount</label><input type="number" id="disc" placeholder="0" min="0" step="0.01" oninput="calc()"></div>
+</div>
+
+<!-- PM FEE -->
+<div class="card">
+  <div class="sec-title"><span>🔍</span> PM / Inspection Fee</div>
+  <div class="field"><label>PM inspection fee<small>Charged separately from labor</small></label><input type="number" id="pmfee" placeholder="0" min="0" step="0.01" oninput="calc()"></div>
+  <div style="font-size:11px;color:var(--gray3);margin-top:4px">Shows as its own line on the customer estimate.</div>
+</div>
+
+<!-- CREDIT CARD -->
+<div class="card">
+  <div class="sec-title"><span>💳</span> Credit Card Fee</div>
+  <div class="cc-row">
+    <label class="tog"><input type="checkbox" id="cc" onchange="calc()"><span class="sldr"></span></label>
+    <span style="font-size:14px;color:var(--gray4);flex:1">Customer paying by card — 3.5% added</span>
+    <span style="font-size:13px;color:var(--orange);font-weight:700" id="ccAmt"></span>
+  </div>
+</div>
+
+<!-- BREAKDOWN -->
+<div class="bdown">
+  <div class="sec-title" style="margin-bottom:10px"><span>📋</span> Breakdown</div>
+  <div class="brow"><span>Journeyman labor</span><span id="rL">$0.00</span></div>
+  <div class="brow" id="helperRow" style="display:none"><span>Helper / apprentice</span><span id="rH">$0.00</span></div>
+  <div class="brow" id="matRow" style="display:none"><span>Materials (with markup)</span><span id="rM">$0.00</span></div>
+  <div class="brow"><span>Safety &amp; consumables</span><span id="rS">$25.00</span></div>
+  <div class="brow" id="tripRow" style="display:none"><span>Trip / mileage</span><span id="rT">$0.00</span></div>
+  <div class="brow" id="toolRow" style="display:none"><span>Tools</span><span id="rTl">$0.00</span></div>
+  <div class="brow" id="rentalRow" style="display:none"><span>Rental equipment</span><span id="rR">$0.00</span></div>
+  <div class="brow" id="subRow" style="display:none"><span>Subcontractor</span><span id="rSb">$0.00</span></div>
+  <div class="brow" id="permitRow" style="display:none"><span>Permit</span><span id="rPm">$0.00</span></div>
+  <div class="brow" id="pmfeeRow" style="display:none"><span>PM / Inspection fee</span><span id="rPmf">$0.00</span></div>
+  <div class="brow cc-line" id="ccRow" style="display:none"><span>CC fee (3.5%)</span><span id="rCC">$0.00</span></div>
+  <div class="brow disc" id="discRow" style="display:none"><span>Discount</span><span id="rD">-$0.00</span></div>
+</div>
+
+<!-- TOTAL -->
+<div class="total-box">
+  <div><div class="tl">Total to charge customer</div><div style="color:rgba(255,255,255,.5);font-size:11px;margin-top:2px" id="ccNote"></div></div>
+  <div class="tv" id="tot">$0.00</div>
+</div>
+
+<!-- PROFIT CARDS -->
+<div class="pgrid">
+  <div class="pcard"><div class="pcard-lbl">Net profit</div><div class="pcard-val g" id="net">$0</div></div>
+  <div class="pcard"><div class="pcard-lbl">Tax set-aside</div><div class="pcard-val a" id="taxA">$0</div></div>
+  <div class="pcard"><div class="pcard-lbl">Effective /hr</div><div class="pcard-val n" id="hrly">—</div></div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions">
+  <button class="btn btn-primary" onclick="showEstimate()">📄 Show Customer Estimate</button>
+  <button class="btn btn-text" onclick="previewThenText()">📱 Text Estimate</button>
+  <button class="btn btn-email" onclick="previewThenEmail()">✉️ Email Estimate</button>
+</div>
+<button class="btn btn-reset" onclick="resetAll()">↺ Clear and start over</button>
+
+</div><!-- /pricing page inner -->
+</div><!-- /page-pricing -->
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PM TASKING PAGE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-pm" class="page">
+
+<div style="background:var(--navy);padding:10px 20px 8px;margin-bottom:0">
+  <div style="max-width:640px;margin:0 auto">
+    <div style="color:#fff;font-size:15px;font-weight:700">PM Task Sheets</div>
+    <div style="color:rgba(255,255,255,.5);font-size:11px">Hometown Solutions — Indiana Code Standards</div>
+  </div>
+</div>
+
+<div style="max-width:640px;margin:0 auto;padding:14px 16px">
+
+<!-- EQUIPMENT TYPE SELECT -->
+<div class="card">
+  <div class="sec-title"><span>⚙️</span> Select Equipment Type</div>
+  <div class="pm-select-grid">
+    <button class="pm-type-btn" onclick="selectPM('wht')"><span>🔥</span>Water Heater<br><small style="font-weight:400;font-size:11px">Tank</small></button>
+    <button class="pm-type-btn" onclick="selectPM('whl')"><span>⚡</span>Water Heater<br><small style="font-weight:400;font-size:11px">Tankless</small></button>
+    <button class="pm-type-btn" onclick="selectPM('bf')"><span>🚰</span>Backflow<br><small style="font-weight:400;font-size:11px">Prevention Device</small></button>
+    <button class="pm-type-btn" onclick="selectPM('sp')"><span>💧</span>Sump Pump</button>
+    <button class="pm-type-btn" onclick="selectPM('ws')"><span>🧂</span>Water Softener</button>
+    <button class="pm-type-btn" onclick="selectPM('prv')"><span>📊</span>Pressure<br><small style="font-weight:400;font-size:11px">Regulator (PRV)</small></button>
+    <button class="pm-type-btn" onclick="selectPM('gas')"><span>🔥</span>Gas Appliance</button>
+  </div>
+</div>
+
+<!-- FUEL TYPE (water heaters only) -->
+<div class="card" id="pmFuelCard" style="display:none">
+  <div class="sec-title"><span>⚡</span> Fuel Type</div>
+  <div class="pm-select-grid" id="pmFuelGrid" style="grid-template-columns:1fr 1fr"></div>
+  <div id="pmFuelNote" style="font-size:11px;color:var(--gray3);margin-top:8px"></div>
+</div>
+
+<!-- JOB INFO -->
+<div class="card" id="pmJobInfo" style="display:none">
+  <div class="sec-title"><span>📋</span> Job Information</div>
+  <div class="field-full"><label>Customer name</label><input type="text" id="pmCust" placeholder="John Smith"></div>
+  <div class="field-full"><label>Phone</label><input type="tel" id="pmPhone" placeholder="(317) 555-0100"></div>
+  <div class="field-full"><label>Email</label><input type="email" id="pmEmail" placeholder="customer@email.com"></div>
+  <div class="field-full"><label>Address</label><input type="text" id="pmAddr" placeholder="123 Main St, Lebanon, IN"></div>
+  <div class="field-full"><label>Equipment brand / model</label><input type="text" id="pmModel" placeholder="Rheem Performance 40 Gal"></div>
+  <div class="field-full"><label>Serial number</label><input type="text" id="pmSerial" placeholder="RH123456789"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+    <div class="field-full" style="margin-bottom:0"><label>Service date</label><input type="date" id="pmDate"></div>
+    <div class="field-full" style="margin-bottom:0"><label>Equipment age (yrs)</label><input type="number" id="pmAge" placeholder="0" min="0"></div>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div id="pmProgressCard" class="card" style="display:none">
+  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+    <span style="font-size:13px;font-weight:600;color:var(--navy)" id="pmTitle">Tasks</span>
+    <span style="font-size:13px;color:var(--gray3)" id="pmProgressText">0 / 0</span>
+  </div>
+  <div class="pm-progress"><div class="pm-progress-bar" id="pmProgressBar" style="width:0%"></div></div>
+</div>
+
+<!-- TASK LIST -->
+<div class="card" id="pmTaskCard" style="display:none">
+  <div class="sec-title"><span>✅</span> Inspection Tasks</div>
+  <div id="pmTaskList"></div>
+</div>
+
+<!-- SUMMARY -->
+<div id="pmSummaryCard" class="card" style="display:none">
+  <div class="sec-title"><span>📊</span> Inspection Summary</div>
+  <div class="field-full"><label>Overall system status</label>
+    <select id="pmStatus" style="width:100%;padding:11px 14px;border:1.5px solid var(--gray2);border-radius:9px;font-size:14px;color:var(--gray4);background:#fff;outline:none;-webkit-appearance:none">
+      <option>Pass — No issues found</option>
+      <option>Pass with recommendations</option>
+      <option>Needs attention — schedule service</option>
+      <option>Failed — immediate service required</option>
+    </select>
+  </div>
+  <div class="field-full" style="margin-top:10px"><label>Technician recommendations</label>
+    <textarea id="pmNotes" placeholder="Note any findings, recommendations, or next steps..." rows="3" style="resize:vertical;font-family:inherit"></textarea>
+  </div>
+</div>
+
+<!-- SIGN OFF -->
+<div class="card" id="pmSignCard" style="display:none">
+  <div class="sec-title"><span>✍️</span> Sign-Off</div>
+  <div class="sig-block">
+    <label>Technician signature</label>
+    <input class="sig-line" type="text" id="sigTech" placeholder="Caleb — HTS">
+  </div>
+  <div class="sig-block" style="margin-top:14px">
+    <label>Customer / owner signature</label>
+    <input class="sig-line" type="text" id="sigCust" placeholder="Customer name">
+  </div>
+  <div class="pm-actions">
+    <button class="btn btn-primary" onclick="printPM()">🖨 Print / Save PM Report</button>
+    <button class="btn btn-text" onclick="previewThenPMText()">📱 Text PM Report</button>
+    <button class="btn btn-email" onclick="previewThenPMEmail()">✉️ Email PM Report</button>
+  </div>
+  <button onclick="resetPM()" style="width:100%;margin-top:8px;padding:10px;background:#fff;color:var(--gray3);border:1.5px solid var(--gray2);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">↺ Start new PM</button>
+</div>
+
+</div>
+</div><!-- /page-pm -->
+
+<!-- ESTIMATE MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title" id="modalTitleText">Customer Estimate</div><button class="modal-close" onclick="closeEstimate()">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ── PM TASK DATA ──────────────────────────────────────────────────────────
+// Each task: t = label, c = critical (red/flagged), n = helper note shown under label,
+// reading = { label, placeholder } -> renders an actual input box the tech fills in on-site
+const PM_DATA = {
+  wht: {
+    title: 'Water Heater (Tank) — Annual PM',
+    fuelOptions: ['gas','electric'],
+    tasks: [
+      {t:'Visual inspection — tank body, connections, flue/vent for rust, corrosion, or damage',c:true},
+      {t:'Check all water connections and fittings — no active leaks or mineral staining'},
+      {t:'TEST T&P relief valve — lift lever briefly, verify discharge, reseat cleanly',c:true,n:'Critical safety test — replace if drips after'},
+      {t:'Inspect T&P discharge pipe — correct length, material, no kinks or improper termination'},
+      {t:'Check anode rod condition — inspect for depletion (less than ½" core remaining)',n:'Soft water areas: inspect annually'},
+      {t:'Flush sediment — drain 3–5 gallons from drain valve, note water clarity',n:'Record gallons flushed',reading:{label:'Gallons flushed',placeholder:'e.g. 4'}},
+      {t:'Inspect drain valve — no drip, operates fully, cap/nipple in place'},
+      {t:'Check cold water inlet shutoff — fully operational, no corrosion'},
+      {t:'Inspect dielectric unions / connections — no galvanic corrosion'},
+      {t:'Inspect expansion tank — correct pre-charge, no waterlogging',n:'Record pre-charge pressure (psi)',reading:{label:'Pre-charge (psi)',placeholder:'e.g. 55'}},
+      {t:'Verify thermostat temperature setting',n:'120°F recommended per OSHA/IPC',reading:{label:'Thermostat setting (°F)',placeholder:'e.g. 120'}},
+      {t:'Measure actual hot water temp at nearest fixture',n:'Record °F — must be 115–120°F',reading:{label:'Measured temp (°F)',placeholder:'e.g. 118'}},
+      {t:'Check gas shutoff valve — fully operational, clearly labeled',fuel:'gas'},
+      {t:'Inspect gas flex connector — no kinking, corrosion, damage, or age',fuel:'gas'},
+      {t:'Perform gas leak test on all connections — approved bubble solution',n:'No bubbles = pass',fuel:'gas'},
+      {t:'Inspect burner and pilot assembly — clean, flame color correct',fuel:'gas'},
+      {t:'Inspect flue and venting — proper pitch, joint security, no blockage',fuel:'gas'},
+      {t:'Verify 2 ft clearance around unit — no flammables stored nearby',n:'Required by NFPA 54 / IRC',fuel:'gas'},
+      {t:'Verify dedicated circuit breaker — correct amperage, no tripping',fuel:'electric'},
+      {t:'Inspect upper heating element — test continuity/resistance',c:true,fuel:'electric',reading:{label:'Upper element resistance (Ω)',placeholder:'e.g. 12.5'}},
+      {t:'Inspect lower heating element — test continuity/resistance',c:true,fuel:'electric',reading:{label:'Lower element resistance (Ω)',placeholder:'e.g. 12.5'}},
+      {t:'Test upper and lower thermostats — verify cycling and cutoff operation',fuel:'electric'},
+      {t:'Test high-limit (ECO) reset switch — verify trips and resets correctly',c:true,fuel:'electric'},
+      {t:'Inspect electrical connections at elements and thermostats — tight, no scorching',fuel:'electric'},
+      {t:'Document unit age, brand, model, serial, BTU/gallon (gas) or kW/gallon (electric) capacity',n:'Record all — for replacement planning',reading:{label:'Capacity (BTU or kW / gal)',placeholder:'e.g. 40,000 BTU / 50 gal'}},
+      {t:'Custom task / additional finding'},
+    ]
+  },
+  whl: {
+    title: 'Water Heater (Tankless) — Annual PM + Descale',
+    fuelOptions: ['gas'],
+    fuelNote: 'Tankless units are gas-fired only',
+    tasks: [
+      {t:'Visual inspection — unit body, connections, venting, physical damage'},
+      {t:'Check inlet cold water filter screen — clean if restricted'},
+      {t:'Descale heat exchanger — flush with approved descaling solution',c:true,n:'Use manufacturer approved descaler'},
+      {t:'Inspect condensate drain line — clear, proper slope, no blockage'},
+      {t:'Test T&P relief valve — lift lever, verify discharge, reseat cleanly',c:true},
+      {t:'Verify gas pressure at unit inlet — within manufacturer spec',fuel:'gas',reading:{label:'Gas pressure (in. WC)',placeholder:'e.g. 3.5'}},
+      {t:'Perform gas leak test on all connections — bubble solution',fuel:'gas'},
+      {t:'Inspect venting — no blockage, proper pitch, joint integrity',fuel:'gas'},
+      {t:'Test flow rate — verify adequate GPM for household demand',reading:{label:'Flow rate (GPM)',placeholder:'e.g. 7.5'}},
+      {t:'Test recirculation pump operation (if equipped)'},
+      {t:'Test output temperature at 3 fixtures',reading:{label:'Output temp (°F)',placeholder:'e.g. 118'}},
+      {t:'Review error code history on unit display',reading:{label:'Error codes found',placeholder:'e.g. None'}},
+      {t:'Inspect gas shutoff valve — operational, clearly labeled',fuel:'gas'},
+      {t:'Inspect flex connector — no kinking, corrosion, or age',fuel:'gas'},
+      {t:'Document brand, model, serial, GPM rating, firmware version'},
+      {t:'Custom task / additional finding'},
+    ]
+  },
+  bf: {
+    title: 'Backflow Prevention Device — Annual Field Test',
+    tasks: [
+      {t:'Visual inspection — body, covers, ports for corrosion or damage'},
+      {t:'Verify isolation valve #1 (upstream) — fully open, operational'},
+      {t:'Verify isolation valve #2 (downstream) — fully closed, operational'},
+      {t:'Record static upstream pressure at test cock #1 (psi)',reading:{label:'Static upstream (psi)',placeholder:'e.g. 62'}},
+      {t:'Record flowing pressure at test cock #2 (psi)',reading:{label:'Flowing pressure (psi)',placeholder:'e.g. 58'}},
+      {t:'Check valve #1 — test seat, disc, spring — holds differential',c:true,reading:{label:'Valve 1 differential (psid)',placeholder:'e.g. 2.1'}},
+      {t:'Check valve #2 — test seat, disc, spring — holds differential',c:true,reading:{label:'Valve 2 differential (psid)',placeholder:'e.g. 2.3'}},
+      {t:'Test differential pressure relief valve (RPZ)',c:true,reading:{label:'Relief valve opening (psid)',placeholder:'e.g. 2.0'}},
+      {t:'Test cock #1 — operational, seals fully, no leakage after closing'},
+      {t:'Test cock #2 — operational, seals fully, no leakage after closing'},
+      {t:'Test cock #3 — operational, seals fully, no leakage after closing'},
+      {t:'Test cock #4 — operational, seals fully, no leakage after closing'},
+      {t:'Relief valve port — unobstructed, drains freely, not submerged'},
+      {t:'Perform complete annual field test per ASSE 5110',c:true,n:'Per Indiana state requirement'},
+      {t:'Submit test report to local water authority',c:true},
+      {t:'Inspect for unauthorized bypass piping'},
+      {t:'Document brand, model, serial, size, assembly type (DC/RP/PVB)'},
+      {t:'Custom task / additional finding'},
+    ]
+  },
+  sp: {
+    title: 'Sump Pump — Annual PM + Monthly Visual',
+    tasks: [
+      {t:'Visual inspection — pump, pit, discharge line for damage or obstruction'},
+      {t:'Clean pit — remove debris, sediment, check float/switch clearance'},
+      {t:'Test float switch — manually lift, verify pump activates immediately'},
+      {t:'Test pump run cycle — pour water, verify activates/deactivates properly'},
+      {t:'Check check valve — no reverse flow after pump shuts off'},
+      {t:'Inspect discharge line — no clogs, correct slope, proper termination'},
+      {t:'Verify discharge terminates minimum 6 ft from foundation'},
+      {t:'Check electrical — secure, no corrosion, GFCI protected',c:true},
+      {t:'Verify pump plugged into dedicated outlet — GFCI protected'},
+      {t:'Test backup pump float switch and operation'},
+      {t:'Check battery backup charge level and age',reading:{label:'Battery age (yrs)',placeholder:'e.g. 2'}},
+      {t:'Inspect pit cover — properly sealed, weep hole present and clear'},
+      {t:'Document pump cycle time (seconds)',n:'Record gallons flushed'.replace('gallons flushed','cycle time'),reading:{label:'Cycle time (sec)',placeholder:'e.g. 18'}},
+      {t:'Test high water alarm (if equipped)'},
+      {t:'Document brand, model, HP, installation date'},
+      {t:'Custom task / additional finding'},
+    ]
+  },
+  ws: {
+    title: 'Water Softener — Annual Service + Quarterly Salt Check',
+    tasks: [
+      {t:'Visual inspection — tank, brine tank, valve head, feed line for leaks'},
+      {t:'Check salt level in brine tank'},
+      {t:'Inspect for salt bridges — probe tank, break up bridging if found'},
+      {t:'Clean brine tank interior — remove mushy salt and sludge buildup'},
+      {t:'Test incoming water hardness — record GPG',reading:{label:'Incoming hardness (GPG)',placeholder:'e.g. 18'}},
+      {t:'Test outgoing water hardness — should read 0–1 GPG',reading:{label:'Outgoing hardness (GPG)',placeholder:'e.g. 0'}},
+      {t:'Verify control valve settings — hardness, regeneration schedule, time'},
+      {t:'Manually initiate regeneration cycle — verify full cycle completes'},
+      {t:'Inspect injector and venturi — clean if fouled'},
+      {t:'Check drain line flow during regeneration'},
+      {t:'Inspect resin bed — check for iron fouling, channeling, depletion'},
+      {t:'Verify supply/discharge connections at valve head — no leaks'},
+      {t:'Check bypass valve — operates freely, no leaks'},
+      {t:'Document brand, model, serial, grain capacity, salt type used',reading:{label:'Grain capacity',placeholder:'e.g. 48,000 grain'}},
+      {t:'Custom task / additional finding'},
+    ]
+  },
+  prv: {
+    title: 'Pressure Regulator (PRV) — Annual Inspection',
+    tasks: [
+      {t:'Measure and record static inlet pressure (psi)',reading:{label:'Static inlet (psi)',placeholder:'e.g. 110'}},
+      {t:'Measure and record static outlet pressure (psi)',reading:{label:'Static outlet (psi)',placeholder:'e.g. 70'}},
+      {t:'Measure and record flowing outlet pressure (psi)',reading:{label:'Flowing outlet (psi)',placeholder:'e.g. 65'}},
+      {t:'Verify outlet pressure within 60–80 psi per IPC 604.8',c:true},
+      {t:'Check for pressure creep — outlet rising with no flow (failed PRV)',c:true},
+      {t:'Inspect body — no corrosion, cracks, mineral buildup, or leaks'},
+      {t:'Check adjustment mechanism — turns freely, holds set pressure'},
+      {t:'Inspect inlet strainer screen — clean or replace if restricted'},
+      {t:'Check expansion tank downstream — correct pre-charge if present',reading:{label:'Expansion tank pre-charge (psi)',placeholder:'e.g. 65'}},
+      {t:'Verify shutoff valves on each side of PRV — fully operational'},
+      {t:'Verify isolation union present for future PRV replacement'},
+      {t:'Document brand, model, size, set pressure, installation date',reading:{label:'Set pressure (psi)',placeholder:'e.g. 70'}},
+      {t:'Custom task / additional finding'},
+    ]
+  },
+  gas: {
+    title: 'Gas Appliance Connection — Annual PM',
+    tasks: [
+      {t:'Perform gas leak test — bubble solution on ALL joints and fittings',c:true,n:'No bubbles = pass. Any leak = shut down immediately'},
+      {t:'Verify manual gas shutoff valve — operational, labeled, accessible',c:true},
+      {t:'Inspect flexible gas connector — no kinking, corrosion, or damage'},
+      {t:'Record approximate age of flex connector',reading:{label:'Connector age (yrs)',placeholder:'e.g. 3'}},
+      {t:'Verify sediment trap / drip leg — present, functional'},
+      {t:'Check union or fitting at appliance — leak-free, correct connection'},
+      {t:'Inspect manual shutoff at appliance — turns freely'},
+      {t:'Verify gas pressure at appliance — within manufacturer spec',reading:{label:'Gas pressure (in. WC)',placeholder:'e.g. 3.5'}},
+      {t:'Test for carbon monoxide — record CO ppm at appliance location',c:true,n:'Record CO ppm reading',reading:{label:'CO reading (ppm)',placeholder:'e.g. 0'}},
+      {t:'Inspect combustion air supply — adequate, not obstructed'},
+      {t:'Check venting system — no blockage, proper termination'},
+      {t:'Verify gas type matches appliance rating (NG vs LP)',c:true},
+      {t:'Verify 18" clearance from ignition source per NFPA 54'},
+      {t:'Document appliance brand, BTU rating, gas type, installation date',reading:{label:'BTU rating',placeholder:'e.g. 40,000'}},
+      {t:'Custom task / additional finding'},
+    ]
+  }
+};
+
+let currentPM = null;
+let currentFuel = null;
+let taskChecks = [];
+let taskReadings = [];
+let visibleTaskIndices = [];
+
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  document.querySelectorAll('.tab')[tab==='pricing'?0:1].classList.add('active');
+}
+
+function fuelLabel(f) {
+  return f === 'gas' ? '🔥 Gas' : '⚡ Electric';
+}
+
+function selectPM(type) {
+  currentPM = type;
+  currentFuel = null;
+  const data = PM_DATA[type];
+  taskChecks = data.tasks.map(()=>false);
+  taskReadings = data.tasks.map(()=>'');
+  document.querySelectorAll('.pm-type-btn').forEach(b=>b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  document.getElementById('pmTitle').textContent = data.title;
+
+  const fuelOptions = data.fuelOptions || null;
+  const fuelCard = document.getElementById('pmFuelCard');
+
+  if (fuelOptions && fuelOptions.length > 1) {
+    fuelCard.style.display = 'block';
+    document.getElementById('pmFuelGrid').innerHTML = fuelOptions.map(f =>
+      `<button class="pm-type-btn" onclick="selectFuel('${f}')" id="fuelBtn_${f}">${fuelLabel(f)}</button>`
+    ).join('');
+    document.getElementById('pmFuelNote').textContent = data.fuelNote || 'Select the fuel type for this unit before starting the checklist.';
+    ['pmJobInfo','pmProgressCard','pmTaskCard','pmSummaryCard','pmSignCard'].forEach(id=>{
+      document.getElementById(id).style.display='none';
+    });
+  } else if (fuelOptions && fuelOptions.length === 1) {
+    fuelCard.style.display = 'block';
+    document.getElementById('pmFuelGrid').innerHTML = `<button class="pm-type-btn selected" disabled style="opacity:.7;cursor:default">${fuelLabel(fuelOptions[0])}</button>`;
+    document.getElementById('pmFuelNote').textContent = data.fuelNote || '';
+    selectFuelInternal(fuelOptions[0]);
+  } else {
+    fuelCard.style.display = 'none';
+    selectFuelInternal(null);
+  }
+}
+
+function selectFuel(f) {
+  const grid = document.getElementById('pmFuelGrid');
+  Array.from(grid.children).forEach(b => b.classList.remove('selected'));
+  const btn = document.getElementById('fuelBtn_' + f);
+  if (btn) btn.classList.add('selected');
+  selectFuelInternal(f);
+}
+
+function selectFuelInternal(f) {
+  currentFuel = f;
+  ['pmJobInfo','pmProgressCard','pmTaskCard','pmSummaryCard','pmSignCard'].forEach(id=>{
+    document.getElementById(id).style.display='block';
+  });
+  renderTasks();
+  updateProgress();
+  const d = new Date().toISOString().split('T')[0];
+  const dateEl = document.getElementById('pmDate');
+  if (!dateEl.value) dateEl.value = d;
+}
+
+function renderTasks() {
+  const data = PM_DATA[currentPM];
+  const list = document.getElementById('pmTaskList');
+
+  visibleTaskIndices = [];
+  data.tasks.forEach((task, realIdx) => {
+    if (!task.fuel || task.fuel === currentFuel) {
+      visibleTaskIndices.push(realIdx);
+    }
+  });
+
+  list.innerHTML = visibleTaskIndices.map((realIdx) => {
+    const task = data.tasks[realIdx];
+    const i = realIdx;
+    return `
+    <div class="task-item">
+      <div class="task-item-top">
+        <div class="task-check ${taskChecks[i]?'checked':''}" onclick="toggleTask(${i})" id="chk${i}"></div>
+        <div style="flex:1">
+          <div class="task-label ${task.c?'critical':''}">${task.c?'⚠ ':''}${task.t}</div>
+          ${task.n?`<div class="task-note">${task.n}</div>`:''}
+        </div>
+      </div>
+      ${task.reading?`
+      <div class="task-reading">
+        <label>${task.reading.label}</label>
+        <input type="text" id="reading${i}" placeholder="${task.reading.placeholder}"
+          value="${taskReadings[i]||''}" oninput="setReading(${i}, this.value)">
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function toggleTask(i) {
+  taskChecks[i] = !taskChecks[i];
+  const chk = document.getElementById('chk'+i);
+  chk.classList.toggle('checked', taskChecks[i]);
+  updateProgress();
+}
+
+function setReading(i, val) {
+  taskReadings[i] = val;
+}
+
+function updateProgress() {
+  const total = visibleTaskIndices.length;
+  const done = visibleTaskIndices.filter(i => taskChecks[i]).length;
+  const pct = total>0 ? Math.round(done/total*100) : 0;
+  document.getElementById('pmProgressText').textContent = done+' / '+total+' tasks';
+  document.getElementById('pmProgressBar').style.width = pct+'%';
+}
+
+function resetPM() {
+  currentPM = null;
+  currentFuel = null;
+  taskChecks = [];
+  taskReadings = [];
+  visibleTaskIndices = [];
+  document.querySelectorAll('.pm-type-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('pmFuelCard').style.display='none';
+  ['pmJobInfo','pmProgressCard','pmTaskCard','pmSummaryCard','pmSignCard'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  ['pmCust','pmPhone','pmEmail','pmAddr','pmModel','pmSerial','pmAge','pmNotes','sigTech','sigCust'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+}
+
+// ── Shared: pull current PM state into one object ─────────────────────────
+function getPMData() {
+  if (!currentPM) return null;
+  const data = PM_DATA[currentPM];
+  return {
+    data,
+    fuel: currentFuel,
+    cust: document.getElementById('pmCust').value.trim(),
+    phone: document.getElementById('pmPhone').value.trim(),
+    email: document.getElementById('pmEmail').value.trim(),
+    addr: document.getElementById('pmAddr').value.trim(),
+    model: document.getElementById('pmModel').value.trim(),
+    serial: document.getElementById('pmSerial').value.trim(),
+    date: document.getElementById('pmDate').value,
+    age: document.getElementById('pmAge').value,
+    status: document.getElementById('pmStatus').value,
+    notes: document.getElementById('pmNotes').value.trim(),
+    sigT: document.getElementById('sigTech').value.trim(),
+    sigC: document.getElementById('sigCust').value.trim(),
+    done: visibleTaskIndices.filter(i => taskChecks[i]).length,
+    total: visibleTaskIndices.length,
+  };
+}
+
+function printPM() {
+  if(!currentPM){alert('Please select equipment type first.');return;}
+  const p = getPMData();
+  const cust = p.cust||'—', addr = p.addr||'—', model = p.model||'—', serial = p.serial||'—';
+  const date = p.date||'—', age = p.age||'—', status = p.status, notes = p.notes||'None';
+  const sigT = p.sigT||'—', sigC = p.sigC||'—';
+
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>PM Report</title><style>
+    body{font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;color:#2d2d2d}
+    h1{color:#1F3864;font-size:18px;margin-bottom:4px}
+    .co{color:#E8621A;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+    table{width:100%;border-collapse:collapse;margin:12px 0}
+    td{padding:6px 8px;border:1px solid #e2e5ea;font-size:13px;vertical-align:top}
+    .hdr-cell{background:#1F3864;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase}
+    .task-row td:first-child{width:24px;text-align:center}
+    .check{color:#2D7D46;font-size:16px;font-weight:700}
+    .uncheck{color:#ccc;font-size:16px}
+    .critical{color:#C0392B;font-weight:700}
+    .reading-line{color:#1F3864;font-weight:700;margin-top:3px}
+    .section{background:#1F3864;color:#fff;padding:8px 12px;font-weight:700;font-size:13px;margin:16px 0 8px;border-radius:4px}
+    .sig-line{border-bottom:2px solid #2d2d2d;min-height:40px;margin-top:8px;width:100%}
+    .footer{text-align:center;font-size:11px;color:#9AA0AB;margin-top:24px;border-top:1px solid #e2e5ea;padding-top:12px}
+    @media print{.no-print{display:none}}
+  </style></head><body>
+  <div class="co">Hometown Solutions — PM Report</div>
+  <h1>${p.data.title}</h1>
+  <p style="font-size:12px;color:#9AA0AB;margin-bottom:16px">317-941-8086 | hometownhelp365.com | Lebanon, Indiana</p>
+
+  <div class="section">Job Information</div>
+  <table><tr><td class="hdr-cell">Customer</td><td>${cust}</td><td class="hdr-cell">Date</td><td>${date}</td></tr>
+  <tr><td class="hdr-cell">Address</td><td>${addr}</td><td class="hdr-cell">Equip Age</td><td>${age} yrs</td></tr>
+  <tr><td class="hdr-cell">Brand / Model</td><td>${model}</td><td class="hdr-cell">Serial #</td><td>${serial}</td></tr>
+  ${p.fuel?'<tr><td class="hdr-cell">Fuel Type</td><td colspan="3">'+(p.fuel==='gas'?'Gas':'Electric')+'</td></tr>':''}</table>
+
+  <div class="section">Inspection Tasks — ${p.done}/${p.total} Completed</div>
+  <table>${visibleTaskIndices.map((i)=>{const task=p.data.tasks[i];return `<tr class="task-row">
+    <td><span class="${taskChecks[i]?'check':'uncheck'}">${taskChecks[i]?'✓':'○'}</span></td>
+    <td class="${task.c?'critical':''}">${task.c?'⚠ ':''}${task.t}${task.n?'<br><small style="color:#E8621A;font-style:italic">'+task.n+'</small>':''}${(task.reading&&taskReadings[i])?'<div class="reading-line">'+task.reading.label+': '+taskReadings[i]+'</div>':''}</td>
+  </tr>`;}).join('')}</table>
+
+  <div class="section">Inspection Summary</div>
+  <table><tr><td class="hdr-cell" style="width:40%">Overall Status</td><td><strong>${status}</strong></td></tr>
+  <tr><td class="hdr-cell">Technician Notes</td><td>${notes}</td></tr></table>
+
+  <div class="section">Sign-Off</div>
+  <table><tr><td style="width:50%;padding:12px"><strong style="font-size:12px;color:#9AA0AB;text-transform:uppercase">Technician</strong><div class="sig-line">${sigT}</div></td>
+  <td style="width:50%;padding:12px"><strong style="font-size:12px;color:#9AA0AB;text-transform:uppercase">Customer / Owner</strong><div class="sig-line">${sigC}</div></td></tr></table>
+
+  <div class="footer">Hometown Solutions · Master Journeyman Plumber · Licensed & Insured<br>Lebanon, Indiana · 317-941-8086 · hometownhelp365.com<br>All inspections performed to Indiana plumbing code standards.</div>
+
+  <div class="no-print" style="margin-top:20px;text-align:center">
+    <button onclick="window.print()" style="padding:12px 32px;background:#1F3864;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">Print / Save as PDF</button>
+  </div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),500);
+}
+
+// ── Build a plain-text version of the PM report for text/email ────────────
+function pmReportText() {
+  const p = getPMData();
+  if (!p) return '';
+  let txt = 'Hometown Solutions\n';
+  txt += 'Master Journeyman Plumber — Licensed & Insured\n';
+  txt += 'Lebanon, Indiana\n';
+  txt += 'Phone: 317-941-8086\n';
+  txt += 'Web: hometownhelp365.com\n\n';
+  txt += 'PM REPORT — ' + p.data.title + '\n';
+  if (p.fuel) txt += 'Fuel Type: ' + (p.fuel === 'gas' ? 'Gas' : 'Electric') + '\n';
+  txt += 'Date: ' + (p.date || today()) + '\n';
+  if (p.cust) txt += 'Customer: ' + p.cust + '\n';
+  if (p.addr) txt += 'Address: ' + p.addr + '\n';
+  if (p.model) txt += 'Equipment: ' + p.model + '\n';
+  if (p.serial) txt += 'Serial #: ' + p.serial + '\n';
+  if (p.age) txt += 'Equipment Age: ' + p.age + ' yrs\n';
+
+  txt += '\nTASKS COMPLETED: ' + p.done + ' of ' + p.total + '\n';
+  txt += '\nREADINGS RECORDED\n';
+  let anyReadings = false;
+  visibleTaskIndices.forEach((i) => {
+    const task = p.data.tasks[i];
+    if (task.reading && taskReadings[i]) {
+      anyReadings = true;
+      txt += '- ' + task.reading.label + ': ' + taskReadings[i] + '\n';
+    }
+  });
+  if (!anyReadings) txt += '- None recorded\n';
+
+  txt += '\nOVERALL STATUS: ' + p.status + '\n';
+  if (p.notes) txt += '\nTECHNICIAN NOTES\n' + p.notes + '\n';
+
+  txt += '\nThank you for trusting Hometown Solutions with your equipment. ';
+  txt += 'This inspection was performed to Indiana plumbing code standards. ';
+  txt += 'Please don\'t hesitate to call with any questions.\n\n';
+  txt += '317-941-8086 | hometownhelp365.com';
+  return txt;
+}
+
+function doSendPMText() {
+  if(!currentPM){alert('Please select equipment type first.');return;}
+  const p = getPMData();
+  const link = buildPMLink();
+  const shortMsg = 'Hometown Solutions — Your PM report is ready.\n\n'
+    + p.data.title + '\n'
+    + p.done + ' of ' + p.total + ' tasks completed\n\n'
+    + 'View your full report here:\n' + link
+    + '\n\n317-941-8086 | hometownhelp365.com';
+  const body = encodeURIComponent(shortMsg);
+  const num = (p.phone||'').replace(/\D/g,'');
+  window.location.href = num ? 'sms:'+num+'?body='+body : 'sms:?body='+body;
+}
+
+function doSendPMEmail() {
+  if(!currentPM){alert('Please select equipment type first.');return;}
+  const p = getPMData();
+  const link = buildPMLink();
+  const subject = encodeURIComponent('PM Report from Hometown Solutions'+(p.cust?' — '+p.cust:'')+' — '+p.data.title);
+  const emailBody = 'Hi' + (p.cust?' '+p.cust.split(' ')[0]:'') + ',\n\n'
+    + 'Your preventive maintenance report is ready to view:\n\n'
+    + link + '\n\n'
+    + p.data.title + '\n'
+    + p.done + ' of ' + p.total + ' tasks completed\n\n'
+    + 'Please don\'t hesitate to reach out with any questions.\n\n'
+    + 'Hometown Solutions\nMaster Journeyman Plumber — Licensed & Insured\n317-941-8086 | hometownhelp365.com';
+  const body = encodeURIComponent(emailBody);
+  window.location.href = p.email ? 'mailto:'+p.email+'?subject='+subject+'&body='+body : 'mailto:?subject='+subject+'&body='+body;
+}
+
+// ── CUSTOM TOOLS ──────────────────────────────────────────────────────────
+const TOOL_KEY = 'hts_custom_tools';
+function loadCustomTools(){try{return JSON.parse(localStorage.getItem(TOOL_KEY)||'[]');}catch(e){return[];}}
+function saveCustomTools(t){localStorage.setItem(TOOL_KEY,JSON.stringify(t));}
+
+function refreshToolDropdowns(){
+  const custom=loadCustomTools();
+  for(let n=1;n<=6;n++){
+    const sel=document.getElementById('t'+n);
+    if(!sel)continue;
+    while(sel.options.length>9)sel.remove(sel.options.length-2);
+    custom.forEach(tool=>{
+      const opt=document.createElement('option');
+      opt.value=tool.rate;
+      opt.textContent=tool.name+' — $'+parseFloat(tool.rate).toFixed(2);
+      sel.insertBefore(opt,sel.options[sel.options.length-1]);
+    });
+  }
+}
+
+function renderCustomToolsList(){
+  const custom=loadCustomTools();
+  const c=document.getElementById('customToolsList');
+  if(!c)return;
+  c.innerHTML=custom.length===0?'':custom.map((t,i)=>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray2);font-size:13px">
+    <span style="color:var(--gray4)">${t.name}</span>
+    <div style="display:flex;align-items:center;gap:12px">
+    <span style="font-weight:600;color:var(--navy)">$${parseFloat(t.rate).toFixed(2)}/use</span>
+    <button onclick="removeCustomTool(${i})" style="background:none;border:none;color:var(--gray3);font-size:18px;cursor:pointer;padding:0 4px">×</button>
+    </div></div>`
+  ).join('');
+}
+
+function addCustomTool(){
+  const name=document.getElementById('newToolName').value.trim();
+  const rate=parseFloat(document.getElementById('newToolRate').value)||0;
+  if(!name){alert('Please enter a tool name.');return;}
+  if(rate<=0){alert('Please enter a charge greater than $0.');return;}
+  const custom=loadCustomTools();
+  custom.push({name,rate:rate.toFixed(2)});
+  saveCustomTools(custom);
+  document.getElementById('newToolName').value='';
+  document.getElementById('newToolRate').value='';
+  refreshToolDropdowns();
+  renderCustomToolsList();
+}
+
+function removeCustomTool(i){
+  const custom=loadCustomTools();
+  custom.splice(i,1);
+  saveCustomTools(custom);
+  refreshToolDropdowns();
+  renderCustomToolsList();
+}
+
+// ── PRICING CALC ──────────────────────────────────────────────────────────
+const f2=v=>'$'+Math.abs(v).toFixed(2);
+const fi=v=>'$'+Math.round(Math.abs(v)).toLocaleString();
+const today=()=>new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+const gn=id=>parseFloat(document.getElementById(id).value)||0;
+
+let _total=0,_net=0,_tax=0,_labor=0,_helpers=0,_mat=0,_trip=0,_tools=0,
+    _rental=0,_sub=0,_permit=0,_cc=0,_disc=0,_pmfee=0;
+
+function show(id,v){document.getElementById(id).style.display=v?'flex':'none';}
+
+function calc(){
+  const std=gn('std'),prem=gn('prem'),emer=gn('emer');
+  const h1hrs=gn('h1hrs'),h1rate=gn('h1rate')||85;
+  const h2hrs=gn('h2hrs'),h2rate=gn('h2rate')||85;
+  const mat=gn('mat'),mkup=parseFloat(document.getElementById('mkup').value);
+  const miles=gn('miles'),permit=gn('permit'),rental=gn('rental');
+  const sub=gn('sub'),disc=gn('disc'),pmfee=gn('pmfee');
+  const cc=document.getElementById('cc').checked;
+  const tools=[1,2,3,4,5,6].reduce((s,n)=>s+gn('t'+n),0);
+
+  _labor=std*110+prem*125+emer*165;
+  _helpers=h1hrs*h1rate+h2hrs*h2rate;
+  _mat=mat*(1+mkup);
+  const safety=25;
+  _trip=miles*0.70*2;
+  _tools=tools;
+  _rental=rental*1.18;
+  _sub=sub>0?sub/0.747*0.847:0;
+  _permit=permit;
+  _disc=disc;
+  _pmfee=pmfee;
+
+  const sub_total=_labor+_helpers+_mat+safety+_trip+_tools+_rental+_sub+_permit+_pmfee-_disc;
+  _cc=cc?sub_total*0.035:0;
+  _total=sub_total+_cc;
+  const gross=_total-mat-rental-sub;
+  _tax=gross*0.40;
+  _net=gross-_tax;
+  const hrs=std+prem+emer+h1hrs+h2hrs;
+
+  document.getElementById('rL').textContent=f2(_labor);
+  document.getElementById('rH').textContent=f2(_helpers);
+  document.getElementById('rM').textContent=f2(_mat);
+  document.getElementById('rS').textContent=f2(safety);
+  document.getElementById('rT').textContent=f2(_trip);
+  document.getElementById('rTl').textContent=f2(_tools);
+  document.getElementById('rR').textContent=f2(_rental);
+  document.getElementById('rSb').textContent=f2(_sub);
+  document.getElementById('rPm').textContent=f2(_permit);
+  document.getElementById('rPmf').textContent=f2(_pmfee);
+  document.getElementById('rCC').textContent=f2(_cc);
+  document.getElementById('rD').textContent='-'+f2(_disc);
+  show('helperRow',_helpers>0);
+  show('matRow',_mat>0);
+  show('tripRow',_trip>0);
+  show('toolRow',_tools>0);
+  show('rentalRow',_rental>0);
+  show('subRow',_sub>0);
+  show('permitRow',_permit>0);
+  show('pmfeeRow',_pmfee>0);
+  show('ccRow',cc);
+  show('discRow',_disc>0);
+  document.getElementById('tot').textContent=f2(_total);
+  document.getElementById('net').textContent=fi(_net);
+  document.getElementById('taxA').textContent=fi(_tax);
+  document.getElementById('hrly').textContent=hrs>0?f2(_net/hrs)+'/hr':'—';
+  document.getElementById('ccAmt').textContent=cc?'+'+f2(_cc):'';
+  document.getElementById('ccNote').textContent=cc?'Includes 3.5% credit card fee':'';
+}
+
+function getCust(){return{
+  name:document.getElementById('custName').value.trim()||'',
+  phone:document.getElementById('custPhone').value.trim()||'',
+  addr:document.getElementById('custAddr').value.trim()||'',
+  email:document.getElementById('custEmail').value.trim()||'',
+};}
+
+function estimateLines(){
+  const cc=document.getElementById('cc').checked;
+  return[
+    ['Journeyman Labor',f2(_labor)],
+    _helpers>0?['Helper / Apprentice',f2(_helpers)]:null,
+    _mat>0?['Materials',f2(_mat)]:null,
+    ['Safety & Consumables',f2(25)],
+    _trip>0?['Trip / Mileage',f2(_trip)]:null,
+    _tools>0?['Tools',f2(_tools)]:null,
+    _rental>0?['Rental Equipment',f2(_rental)]:null,
+    _sub>0?['Subcontractor',f2(_sub)]:null,
+    _permit>0?['Permit',f2(_permit)]:null,
+    _pmfee>0?['PM / Inspection Fee',f2(_pmfee)]:null,
+    cc?['Credit Card Fee (3.5%)',f2(_cc)]:null,
+    _disc>0?['Discount','-'+f2(_disc)]:null,
+  ].filter(Boolean);
+}
+
+
+// ── Build a fully self-contained, branded HTML page for the estimate ─────
+// This is what gets opened in preview, and what the sent link points to —
+// full navy/orange styling survives because it's real HTML, not plain text.
+
+// ── Build a real, hosted, tappable link to the branded estimate/PM page ──
+// This is the actual fix for colors surviving text/email: we don't send a
+// data: URL (blocked by iMessage/Gmail/Outlook as unsafe) — we send a real
+// https:// link to a page hosted on GitHub Pages, which reads the job data
+// out of the URL and renders it in full Hometown Solutions branding.
+const ESTIMATE_PAGE_BASE = 'https://hometownsolutionsco-max.github.io/Pricing-Engine-/estimate.html';
+
+function b64EncodeUnicode(str) {
+  // Handles special characters (apostrophes in names, etc.) safely
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function buildEstimateLink(){
+  const c = getCust();
+  const payload = {
+    kind: 'estimate',
+    custName: c.name || '',
+    custAddr: c.addr || '',
+    date: today(),
+    total: f2(_total),
+    rows: estimateLines(),
+  };
+  const encoded = encodeURIComponent(b64EncodeUnicode(JSON.stringify(payload)));
+  return ESTIMATE_PAGE_BASE + '?d=' + encoded;
+}
+
+function buildPMLink(){
+  const p = getPMData();
+  if (!p) return '';
+  const readings = visibleTaskIndices
+    .filter(i => p.data.tasks[i].reading && taskReadings[i])
+    .map(i => [p.data.tasks[i].reading.label, taskReadings[i]]);
+  const payload = {
+    kind: 'pm',
+    title: p.data.title,
+    fuel: p.fuel || '',
+    custName: p.cust || '',
+    custAddr: p.addr || '',
+    date: p.date || today(),
+    model: p.model || '',
+    serial: p.serial || '',
+    age: p.age || '',
+    done: p.done,
+    total: p.total,
+    readings: readings,
+    status: p.status,
+    notes: p.notes || '',
+  };
+  const encoded = encodeURIComponent(b64EncodeUnicode(JSON.stringify(payload)));
+  return ESTIMATE_PAGE_BASE + '?d=' + encoded;
+}
+
+function estimateBrandedHTML(){
+  const c=getCust();
+  const rows=estimateLines();
+  const rowsHTML = rows.map(([l,v])=>
+    `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e2e5ea;font-size:15px;color:#4A5568">
+      <span>${l}</span><span style="font-weight:600;color:#1F3864">${v}</span>
+    </div>`
+  ).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estimate — Hometown Solutions</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;padding:20px}
+  .wrap{max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+  .hdr{background:#1F3864;padding:28px 24px;text-align:center}
+  .hdr .co{color:#E8621A;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+  .hdr h1{color:#fff;font-size:22px;font-weight:800}
+  .hdr .sub{color:rgba(255,255,255,.65);font-size:13px;margin-top:6px}
+  .body{padding:24px}
+  .cust{font-size:19px;font-weight:800;color:#1F3864;margin-bottom:2px}
+  .addr{font-size:13px;color:#9AA0AB;margin-bottom:4px}
+  .date{font-size:12px;color:#9AA0AB;margin-bottom:18px}
+  .divider{height:1px;background:#e2e5ea;margin:14px 0}
+  .total-box{background:#1F3864;border-radius:12px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;margin:18px 0}
+  .total-box .tl{color:rgba(255,255,255,.75);font-size:13px}
+  .total-box .tv{color:#fff;font-size:28px;font-weight:800}
+  .footer{text-align:center;font-size:12px;color:#9AA0AB;line-height:1.7;padding-top:8px}
+  .footer strong{color:#4A5568;display:block;margin-top:8px}
+  .badge{display:inline-block;background:#E6F4EA;color:#2D7D46;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;margin-bottom:14px}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div class="co">Hometown Solutions</div>
+    <h1>Job Estimate</h1>
+    <div class="sub">Master Journeyman Plumber &middot; Licensed &amp; Insured</div>
+  </div>
+  <div class="body">
+    <div class="badge">✓ Licensed &amp; Insured</div>
+    ${c.name?`<div class="cust">${c.name}</div>`:''}
+    ${c.addr?`<div class="addr">${c.addr}</div>`:''}
+    <div class="date">Estimate date: ${today()}</div>
+    <div class="divider"></div>
+    ${rowsHTML}
+    <div class="total-box">
+      <span class="tl">Total</span>
+      <span class="tv">${f2(_total)}</span>
+    </div>
+    <div class="footer">
+      317-941-8086 &middot; hometownhelp365.com<br>
+      Lebanon, Indiana &middot; Licensed &amp; Insured
+      <strong>All work performed to Indiana plumbing code standards.</strong>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
+// ── Build a fully self-contained, branded HTML page for a PM report ──────
+function pmReportBrandedHTML(){
+  const p = getPMData();
+  if (!p) return '';
+  const cust = p.cust||'—', addr = p.addr||'—', model = p.model||'—', serial = p.serial||'—';
+  const date = p.date||today(), age = p.age||'—', status = p.status, notes = p.notes||'None';
+
+  const readingRows = visibleTaskIndices
+    .filter(i => p.data.tasks[i].reading && taskReadings[i])
+    .map(i => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e5ea;font-size:14px">
+      <span style="color:#4A5568">${p.data.tasks[i].reading.label}</span>
+      <span style="font-weight:700;color:#1F3864">${taskReadings[i]}</span>
+    </div>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Report — Hometown Solutions</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;padding:20px}
+  .wrap{max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+  .hdr{background:#1F3864;padding:28px 24px;text-align:center}
+  .hdr .co{color:#E8621A;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+  .hdr h1{color:#fff;font-size:20px;font-weight:800}
+  .hdr .sub{color:rgba(255,255,255,.65);font-size:13px;margin-top:6px}
+  .body{padding:24px}
+  .section-lbl{font-size:11px;font-weight:700;color:#9AA0AB;text-transform:uppercase;letter-spacing:.06em;margin:20px 0 10px}
+  .section-lbl:first-child{margin-top:0}
+  .info-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:#4A5568}
+  .info-row span:last-child{font-weight:600;color:#1F3864}
+  .status-box{background:#E6F4EA;border:1px solid #2D7D46;border-radius:10px;padding:14px 16px;margin:10px 0}
+  .status-box .lbl{font-size:11px;color:#2D7D46;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+  .status-box .val{font-size:15px;color:#1F3864;font-weight:700}
+  .progress-pill{display:inline-block;background:#1F3864;color:#fff;font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px}
+  .notes-box{background:#f8f9fa;border:1px solid #e2e5ea;border-radius:10px;padding:14px 16px;font-size:14px;color:#4A5568;line-height:1.5}
+  .footer{text-align:center;font-size:12px;color:#9AA0AB;line-height:1.7;padding-top:16px;margin-top:16px;border-top:1px solid #e2e5ea}
+  .footer strong{color:#4A5568;display:block;margin-top:8px}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div class="co">Hometown Solutions</div>
+    <h1>${p.data.title}</h1>
+    <div class="sub">${p.fuel?(p.fuel==='gas'?'🔥 Gas':'⚡ Electric')+' &middot; ':''}Preventive Maintenance Report</div>
+  </div>
+  <div class="body">
+    <div class="section-lbl">Job Information</div>
+    <div class="info-row"><span>Customer</span><span>${cust}</span></div>
+    <div class="info-row"><span>Date</span><span>${date}</span></div>
+    <div class="info-row"><span>Address</span><span>${addr}</span></div>
+    <div class="info-row"><span>Equipment</span><span>${model}</span></div>
+    <div class="info-row"><span>Serial #</span><span>${serial}</span></div>
+    <div class="info-row"><span>Equipment Age</span><span>${age} yrs</span></div>
+
+    <div class="section-lbl">Tasks Completed</div>
+    <div class="progress-pill">${p.done} / ${p.total} tasks completed</div>
+
+    ${readingRows ? `<div class="section-lbl">Readings Recorded</div>${readingRows}` : ''}
+
+    <div class="section-lbl">Overall Status</div>
+    <div class="status-box">
+      <div class="lbl">System Status</div>
+      <div class="val">${status}</div>
+    </div>
+
+    ${notes && notes !== 'None' ? `<div class="section-lbl">Technician Notes</div><div class="notes-box">${notes}</div>` : ''}
+
+    <div class="footer">
+      317-941-8086 &middot; hometownhelp365.com<br>
+      Lebanon, Indiana &middot; Licensed &amp; Insured
+      <strong>All inspections performed to Indiana plumbing code standards.</strong>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
+// ── Preview modal: shows the branded page in an iframe before sending ────
+let _pendingSendType = null; // 'estimate-text' | 'estimate-email' | 'pm-text' | 'pm-email'
+
+function openBrandedPreview(kind){
+  const html = kind === 'estimate' ? estimateBrandedHTML() : pmReportBrandedHTML();
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'previewOverlay';
+  overlay.style = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto';
+
+  const bar = document.createElement('div');
+  bar.style = 'width:100%;max-width:560px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px';
+  bar.innerHTML = `
+    <span style="color:#fff;font-size:14px;font-weight:700">Preview — what the customer will see</span>
+    <button id="closePreviewBtn" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;line-height:1;padding:0 6px">✕</button>`;
+
+  const frame = document.createElement('iframe');
+  frame.src = url;
+  frame.style = 'width:100%;max-width:560px;height:70vh;border:none;border-radius:16px;background:#fff';
+
+  const actions = document.createElement('div');
+  actions.style = 'width:100%;max-width:560px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px';
+  actions.innerHTML = `
+    <button id="previewCancelBtn" style="padding:13px;border:1.5px solid rgba(255,255,255,.3);border-radius:10px;background:transparent;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Cancel</button>
+    <button id="previewConfirmBtn" style="padding:13px;border:none;border-radius:10px;background:#E8621A;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Looks good — Send</button>`;
+
+  overlay.appendChild(bar);
+  overlay.appendChild(frame);
+  overlay.appendChild(actions);
+  document.body.appendChild(overlay);
+
+  const cleanup = () => {
+    URL.revokeObjectURL(url);
+    overlay.remove();
+  };
+
+  document.getElementById('closePreviewBtn').onclick = cleanup;
+  document.getElementById('previewCancelBtn').onclick = cleanup;
+  document.getElementById('previewConfirmBtn').onclick = () => {
+    cleanup();
+    confirmSend(kind);
+  };
+}
+
+function confirmSend(kind){
+  if (kind === 'estimate') {
+    if (_pendingSendType === 'text') doSendText();
+    else if (_pendingSendType === 'email') doSendEmail();
+  } else if (kind === 'pm') {
+    if (_pendingSendType === 'text') doSendPMText();
+    else if (_pendingSendType === 'email') doSendPMEmail();
+  }
+  _pendingSendType = null;
+}
+
+function previewThenText(){ _pendingSendType='text'; openBrandedPreview('estimate'); }
+function previewThenEmail(){ _pendingSendType='email'; openBrandedPreview('estimate'); }
+function previewThenPMText(){ _pendingSendType='text'; openBrandedPreview('pm'); }
+function previewThenPMEmail(){ _pendingSendType='email'; openBrandedPreview('pm'); }
+
+
+function estimateText(){
+  const c=getCust();
+  const rows=estimateLines();
+  let txt='Hometown Solutions\n';
+  txt+='Master Journeyman Plumber — Licensed & Insured\n';
+  txt+='Lebanon, Indiana\n';
+  txt+='Phone: 317-941-8086\n';
+  txt+='Web: hometownhelp365.com\n\n';
+  txt+='ESTIMATE\n';
+  txt+='Date: '+today()+'\n';
+  if(c.name)txt+='Customer: '+c.name+'\n';
+  if(c.addr)txt+='Address: '+c.addr+'\n';
+  if(c.phone)txt+='Phone: '+c.phone+'\n';
+  txt+='\nSERVICES & CHARGES\n';
+  rows.forEach(([l,v])=>txt+=l+': '+v+'\n');
+  txt+='\nTOTAL: '+f2(_total)+'\n\n';
+  txt+='Thank you for choosing Hometown Solutions. All work is performed to Indiana plumbing code standards. Please don\'t hesitate to call with any questions.\n\n';
+  txt+='317-941-8086 | hometownhelp365.com';
+  return txt;
+}
+
+function showEstimate(){
+  const c=getCust();
+  const rows=estimateLines();
+  document.getElementById('modalTitleText').textContent='Customer Estimate';
+  let html='';
+  if(c.name)html+=`<div class="est-co">Hometown Solutions</div><div class="est-cust">${c.name}</div>`;
+  if(c.addr)html+=`<div style="font-size:13px;color:var(--gray3);margin-bottom:4px">${c.addr}</div>`;
+  html+=`<div style="font-size:12px;color:var(--gray3);margin-bottom:16px">Estimate date: ${today()}</div>`;
+  html+='<div class="est-divider"></div>';
+  rows.forEach(([l,v])=>html+=`<div class="est-row"><span>${l}</span><span>${v}</span></div>`);
+  html+=`<div class="est-total-row"><span>Total</span><span>${f2(_total)}</span></div>`;
+  html+='<div class="est-divider"></div>';
+  html+=`<div class="est-footer">Hometown Solutions — Master Journeyman Plumber<br>317-941-8086 · hometownhelp365.com<br>Lebanon, Indiana · Licensed & Insured<br><br><strong>All work performed to Indiana plumbing code standards.</strong></div>`;
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+    <button onclick="copyEstTxt()" style="padding:11px;border:1.5px solid var(--gray2);border-radius:9px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--navy)">📋 Copy</button>
+    <button onclick="closeEstimate()" style="padding:11px;border:none;border-radius:9px;background:var(--navy);color:#fff;font-size:13px;font-weight:600;cursor:pointer">Done</button>
+  </div>`;
+  document.getElementById('modalBody').innerHTML=html;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function copyEstTxt(){navigator.clipboard.writeText(estimateText()).then(()=>alert('Copied! Paste it anywhere.'));}
+function closeEstimate(){document.getElementById('modalBg').classList.remove('show');}
+function closeModal(e){if(e.target.id==='modalBg')closeEstimate();}
+
+function doSendText(){
+  const c=getCust();
+  const link = buildEstimateLink();
+  const shortMsg = 'Hometown Solutions — Your estimate is ready.\n\n'
+    + 'Total: ' + f2(_total) + '\n\n'
+    + 'View your full itemized estimate here:\n' + link
+    + '\n\n317-941-8086 | hometownhelp365.com';
+  const body=encodeURIComponent(shortMsg);
+  const num=c.phone.replace(/\D/g,'');
+  window.location.href=num?'sms:'+num+'?body='+body:'sms:?body='+body;
+}
+
+function doSendEmail(){
+  const c=getCust();
+  const link = buildEstimateLink();
+  const subject=encodeURIComponent('Estimate from Hometown Solutions'+(c.name?' — '+c.name:'')+' — '+f2(_total));
+  const emailBody = 'Hi' + (c.name?' '+c.name.split(' ')[0]:'') + ',\n\n'
+    + 'Thank you for the opportunity to provide this estimate. Your full itemized estimate is ready to view:\n\n'
+    + link + '\n\n'
+    + 'Total: ' + f2(_total) + '\n\n'
+    + 'Please don\'t hesitate to reach out with any questions.\n\n'
+    + 'Hometown Solutions\nMaster Journeyman Plumber — Licensed & Insured\n317-941-8086 | hometownhelp365.com';
+  const body=encodeURIComponent(emailBody);
+  window.location.href=c.email?'mailto:'+c.email+'?subject='+subject+'&body='+body:'mailto:?subject='+subject+'&body='+body;
+}
+
+function resetAll(){
+  if(!confirm('Clear everything and start over?'))return;
+  ['custName','custPhone','custAddr','custEmail'].forEach(id=>document.getElementById(id).value='');
+  ['std','prem','emer','h1hrs','h2hrs','miles','permit','rental','sub','disc','mat','pmfee'].forEach(id=>document.getElementById(id).value='');
+  ['h1rate','h2rate'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mkup').value='0.50';
+  document.getElementById('cc').checked=false;
+  [1,2,3,4,5,6].forEach(n=>document.getElementById('t'+n).value=0);
+  calc();
+}
+
+// Init
+refreshToolDropdowns();
+renderCustomToolsList();
+calc();
+</script>
+</body>
+</html>
